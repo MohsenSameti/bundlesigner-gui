@@ -1,0 +1,3 @@
+[submodule "bundle-signer"]
+	path = bundle-signer
+	url = https://github.com/cafebazaar/bundle-signer

@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.nio.file.Paths
 
 plugins {
     kotlin("jvm")
@@ -15,6 +16,8 @@ repositories {
 }
 
 dependencies {
+    // FIXME: Can this be better?
+    implementation(files("./bundle-signer/target/bundlesigner-0.1.13.jar"))
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).
@@ -38,4 +41,15 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.register<Exec>("buildBundleSigner") {
+    // TODO: use installed mvn on system!
+    val command = if (System.getProperty("os.name").toLowerCase().contains("win")) "mvn.cmd" else "mvn"
+    executable = Paths.get(rootProject.projectDir.absolutePath, "apps", "apache-maven", "bin", command).toFile().absolutePath
+    setArgs("package -DskipTests -f ./bundle-signer/pom.xml".split(" "))
+}
+
+tasks.named("compileKotlin") {
+    dependsOn += "buildBundleSigner"
 }
