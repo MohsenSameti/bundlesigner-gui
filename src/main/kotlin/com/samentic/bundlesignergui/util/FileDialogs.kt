@@ -26,3 +26,17 @@ fun selectFileDialog(
     return if(allowMultiSelection) chooser.selectedFiles.toSet()
     else buildSet { chooser.selectedFile?.let { add(it) } }
 }
+
+fun selectSaveDirectoryDialog(
+    window: ComposeWindow?,
+    title: String?
+): File? {
+    val chooser = JFileChooser().apply {
+        this.dialogTitle = title
+        this.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+        this.isMultiSelectionEnabled = false
+    }
+    chooser.showSaveDialog(window)
+
+    return chooser.selectedFile
+}
