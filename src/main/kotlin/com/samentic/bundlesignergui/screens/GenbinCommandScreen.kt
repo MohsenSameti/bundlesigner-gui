@@ -22,6 +22,7 @@ class GenbinCommandScreen : Screen {
 
         var inputBundle by remember { mutableStateOf("") }
         var inputBin by remember { mutableStateOf("") }
+        var inputKeyStore by remember { mutableStateOf("") }
         val selectBundleFileCallback = remember<() -> Unit> {
             {
                 selectFileDialog(
@@ -42,6 +43,19 @@ class GenbinCommandScreen : Screen {
                     title = "Select Generated Bin Location"
                 )?.let { selectedFile ->
                     inputBin = selectedFile.absolutePath
+                }
+            }
+        }
+        val selectKeyStoreCallback = remember<() -> Unit> {
+            {
+                selectFileDialog(
+                    window = composeWindow,
+                    title = "Select KeyStore",
+                    allowedExtensions = listOf("KeyStore (*.jks)" to "jks"),
+                    allowMultiSelection = false,
+                    allowAllFileFilter = true
+                ).firstOrNull()?.let { selectedFile ->
+                    inputKeyStore = selectedFile.absolutePath
                 }
             }
         }
@@ -109,6 +123,40 @@ class GenbinCommandScreen : Screen {
                 }
             }
             // endregion select bin folder
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // region KeyStore
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Key Store: ",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    OutlinedTextField(
+                        value = inputKeyStore,
+                        onValueChange = { inputKeyStore = it },
+                        maxLines = 1,
+                        singleLine = true,
+                        placeholder = {
+                            Text("Key Store")
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick = selectKeyStoreCallback) {
+                        Text("Select")
+                    }
+                }
+            }
         }
     }
 }
