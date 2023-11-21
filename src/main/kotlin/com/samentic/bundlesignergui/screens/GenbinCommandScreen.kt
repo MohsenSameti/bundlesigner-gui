@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.samentic.bundlesignergui.util.LocalComposeWindow
@@ -23,6 +24,7 @@ class GenbinCommandScreen : Screen {
         var inputBundle by remember { mutableStateOf("") }
         var inputBin by remember { mutableStateOf("") }
         var inputKeyStore by remember { mutableStateOf("") }
+        var inputKeyStorePassword by remember { mutableStateOf("") }
         val selectBundleFileCallback = remember<() -> Unit> {
             {
                 selectFileDialog(
@@ -155,6 +157,30 @@ class GenbinCommandScreen : Screen {
                     Button(onClick = selectKeyStoreCallback) {
                         Text("Select")
                     }
+                }
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(
+                    text = "Key Store Password: ",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    OutlinedTextField(
+                        value = inputKeyStorePassword,
+                        onValueChange = { inputKeyStorePassword = it },
+                        maxLines = 1,
+                        singleLine = true,
+                        placeholder = {
+                            Text("Key Store Password")
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
                 }
             }
         }
