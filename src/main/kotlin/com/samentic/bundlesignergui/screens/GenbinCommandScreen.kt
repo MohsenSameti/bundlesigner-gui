@@ -1,25 +1,39 @@
 package com.samentic.bundlesignergui.screens
 
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.rememberDialogState
 import cafe.adriel.voyager.core.screen.Screen
 import com.samentic.bundlesignergui.util.LocalComposeWindow
 import com.samentic.bundlesignergui.util.selectFileDialog
 import com.samentic.bundlesignergui.util.selectSaveDirectoryDialog
+import java.awt.Rectangle
 
 class GenbinCommandScreen : Screen {
 
     @Composable
     override fun Content() {
         val composeWindow = LocalComposeWindow.current
+
+        var showEnvSelectDialog by remember { mutableStateOf(false) }
 
         var inputBundle by remember { mutableStateOf("") }
         var inputBin by remember { mutableStateOf("") }
@@ -59,6 +73,11 @@ class GenbinCommandScreen : Screen {
                 ).firstOrNull()?.let { selectedFile ->
                     inputKeyStore = selectedFile.absolutePath
                 }
+            }
+        }
+        val loadPasswordFromEnvCallback = remember<() -> Unit> {
+            {
+                showEnvSelectDialog = true
             }
         }
 
@@ -181,6 +200,43 @@ class GenbinCommandScreen : Screen {
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick = loadPasswordFromEnvCallback) {
+                        Text("From Env")
+                    }
+                }
+            }
+            // endregion KeyStore
+        }
+
+        if (showEnvSelectDialog) {
+            Dialog(
+                onCloseRequest = { showEnvSelectDialog = false },
+                state = rememberDialogState(size = DpSize(200.dp, 400.dp)),
+                title = "Select Environment Variable",
+            ) {
+                val environment = remember { mutableStateListOf(*System.getenv().keys.sorted().toTypedArray()) }
+                val scrollState = rememberLazyListState()
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(environment) {
+                            Text(
+                                text = it,
+                                modifier = Modifier.padding(4.dp)
+                                    .clickable {
+                                        inputKeyStorePassword = System.getenv(it).orEmpty()
+                                        showEnvSelectDialog = false
+                                    }
+                            )
+                        }
+                    }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(scrollState)
+                    )
                 }
             }
         }
