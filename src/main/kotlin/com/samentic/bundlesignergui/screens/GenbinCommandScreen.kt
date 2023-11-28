@@ -1,20 +1,20 @@
 package com.samentic.bundlesignergui.screens
 
 import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpSize
@@ -25,7 +25,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.samentic.bundlesignergui.util.LocalComposeWindow
 import com.samentic.bundlesignergui.util.selectFileDialog
 import com.samentic.bundlesignergui.util.selectSaveDirectoryDialog
-import java.awt.Rectangle
 
 class GenbinCommandScreen : Screen {
 
@@ -80,7 +79,8 @@ class GenbinCommandScreen : Screen {
                 showEnvSelectDialog = true
             }
         }
-
+        var isV2SingingEnabled by remember{ mutableStateOf(true) }
+        var isV3SingingEnabled by remember{ mutableStateOf(false) }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -206,6 +206,51 @@ class GenbinCommandScreen : Screen {
                 }
             }
             // endregion KeyStore
+
+            // region Singing Options
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+            ) {
+                Checkbox(
+                    checked = isV2SingingEnabled,
+                    onCheckedChange = { isV2SingingEnabled = it }
+                )
+                Text(
+                    text = "Enable V2 Singing",
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .wrapContentHeight()
+                        .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { isV2SingingEnabled = !isV2SingingEnabled }
+                    )
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+            ) {
+                Checkbox(
+                    checked = isV3SingingEnabled,
+                    onCheckedChange = { isV3SingingEnabled = it }
+                )
+                Text(
+                    text = "Enable V3 Singing",
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .wrapContentHeight()
+                        .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { isV3SingingEnabled = !isV3SingingEnabled }
+                    )
+                )
+            }
+            // endregion Singing Options
         }
 
         if (showEnvSelectDialog) {
