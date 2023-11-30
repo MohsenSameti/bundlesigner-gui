@@ -21,7 +21,10 @@ fun selectFileDialog(
         this.isMultiSelectionEnabled = allowMultiSelection
         this.isAcceptAllFileFilterUsed = allowAllFileFilter || allowedExtensions.isEmpty()
     }
-    chooser.showOpenDialog(window)
+    val result = chooser.showOpenDialog(window)
+    if(result != JFileChooser.APPROVE_OPTION) {
+        return emptySet()
+    }
 
     return if(allowMultiSelection) chooser.selectedFiles.toSet()
     else buildSet { chooser.selectedFile?.let { add(it) } }
@@ -36,7 +39,10 @@ fun selectSaveDirectoryDialog(
         this.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
         this.isMultiSelectionEnabled = false
     }
-    chooser.showSaveDialog(window)
+    val result = chooser.showSaveDialog(window)
+    if(result != JFileChooser.APPROVE_OPTION) {
+        return null
+    }
 
     return chooser.selectedFile
 }
