@@ -86,7 +86,9 @@ class GenbinCommandScreenModel : ScreenModel {
             val bundleError: String? = null,
             val binPathError: String? = null,
             val keyStorePathError: String? = null,
-            val keyStorePasswordError: String? = null
+            val keyStorePasswordError: String? = null,
+            // FIXME: this is not a good fix (this is added so each time error is set recompose happens
+            private val time: Long = System.currentTimeMillis()
         ) : State
     }
 }
