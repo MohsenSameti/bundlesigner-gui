@@ -15,29 +15,37 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.rememberDialogState
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import com.samentic.bundlesignergui.screens.GenbinCommandScreenModel.State
 import com.samentic.bundlesignergui.util.LocalComposeWindow
 import com.samentic.bundlesignergui.util.selectFileDialog
 import com.samentic.bundlesignergui.util.selectSaveDirectoryDialog
+import kotlin.system.exitProcess
 
 class GenbinCommandScreen : Screen {
 
     @Composable
     override fun Content() {
         val composeWindow = LocalComposeWindow.current
+        val screenModel = rememberScreenModel<GenbinCommandScreenModel> { GenbinCommandScreenModel() }
 
         var showEnvSelectDialog by remember { mutableStateOf(false) }
 
-        var inputBundle by remember { mutableStateOf("") }
-        var inputBin by remember { mutableStateOf("") }
-        var inputKeyStore by remember { mutableStateOf("") }
-        var inputKeyStorePassword by remember { mutableStateOf("") }
+        var inputBundle by screenModel.inputBundle
+        var inputBin by screenModel.inputBin
+        var inputKeyStore by screenModel.inputKeyStore
+        var inputKeyStorePassword by screenModel.inputKeyStorePassword
+        var isV2SingingEnabled by screenModel.isV2SingingEnabled
+        var isV3SingingEnabled by screenModel.isV3SingingEnabled
+
         val selectBundleFileCallback = remember<() -> Unit> {
             {
                 selectFileDialog(
@@ -79,8 +87,13 @@ class GenbinCommandScreen : Screen {
                 showEnvSelectDialog = true
             }
         }
-        var isV2SingingEnabled by remember{ mutableStateOf(true) }
-        var isV3SingingEnabled by remember{ mutableStateOf(false) }
+
+        val state by screenModel.state.collectAsState()
+        LaunchedEffect(state) {
+            if (state is State.Success) {
+                // TODO: execute genbin command
+            }
+        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,16 +111,29 @@ class GenbinCommandScreen : Screen {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                OutlinedTextField(
-                    value = inputBundle,
-                    onValueChange = { inputBundle = it },
-                    maxLines = 1,
-                    singleLine = true,
-                    placeholder = {
-                        Text("Bundle File")
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+                var error by remember(state) { mutableStateOf((state as? State.Error)?.bundleError) }
+                LaunchedEffect(inputBundle) {
+                    if (error != null) {
+                        error = null
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = inputBundle,
+                        onValueChange = { inputBundle = it },
+                        maxLines = 1,
+                        singleLine = true,
+                        isError = error != null,
+                        placeholder = {
+                            Text("Bundle File")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (error != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = error!!, color = Color.Red)
+                    }
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = selectBundleFileCallback) {
                     Text("Select")
@@ -128,16 +154,29 @@ class GenbinCommandScreen : Screen {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                OutlinedTextField(
-                    value = inputBin,
-                    onValueChange = { inputBin = it },
-                    maxLines = 1,
-                    singleLine = true,
-                    placeholder = {
-                        Text("Bin Directory")
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    var error by remember(state) { mutableStateOf((state as? State.Error)?.binPathError) }
+                    LaunchedEffect(inputBin) {
+                        if (error != null) {
+                            error = null
+                        }
+                    }
+                    OutlinedTextField(
+                        value = inputBin,
+                        onValueChange = { inputBin = it },
+                        isError = error != null,
+                        maxLines = 1,
+                        singleLine = true,
+                        placeholder = {
+                            Text("Bin Directory")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (error != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = error!!, color = Color.Red)
+                    }
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = selectBinPathCallback) {
                     Text("Select")
@@ -162,16 +201,29 @@ class GenbinCommandScreen : Screen {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    OutlinedTextField(
-                        value = inputKeyStore,
-                        onValueChange = { inputKeyStore = it },
-                        maxLines = 1,
-                        singleLine = true,
-                        placeholder = {
-                            Text("Key Store")
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        var error by remember(state) { mutableStateOf((state as? State.Error)?.keyStorePathError) }
+                        LaunchedEffect(inputKeyStore) {
+                            if (error != null) {
+                                error = null
+                            }
+                        }
+                        OutlinedTextField(
+                            value = inputKeyStore,
+                            onValueChange = { inputKeyStore = it },
+                            maxLines = 1,
+                            singleLine = true,
+                            isError = error != null,
+                            placeholder = {
+                                Text("Key Store")
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (error != null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = error!!, color = Color.Red)
+                        }
+                    }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(onClick = selectKeyStoreCallback) {
                         Text("Select")
@@ -188,17 +240,31 @@ class GenbinCommandScreen : Screen {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    OutlinedTextField(
-                        value = inputKeyStorePassword,
-                        onValueChange = { inputKeyStorePassword = it },
-                        maxLines = 1,
-                        singleLine = true,
-                        placeholder = {
-                            Text("Key Store Password")
-                        },
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        var error by remember(state) { mutableStateOf((state as? State.Error)?.keyStorePasswordError) }
+                        LaunchedEffect(inputKeyStorePassword) {
+                            if (error != null) {
+                                error = null
+                            }
+                        }
+                        OutlinedTextField(
+                            value = inputKeyStorePassword,
+                            onValueChange = { inputKeyStorePassword = it },
+                            maxLines = 1,
+                            singleLine = true,
+                            isError = error != null,
+                            placeholder = {
+                                Text("Key Store Password")
+                            },
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (error != null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = error!!, color = Color.Red)
+                        }
+                    }
+
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(onClick = loadPasswordFromEnvCallback) {
                         Text("From Env")
@@ -223,10 +289,10 @@ class GenbinCommandScreen : Screen {
                         .fillMaxHeight()
                         .wrapContentHeight()
                         .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { isV2SingingEnabled = !isV2SingingEnabled }
-                    )
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { isV2SingingEnabled = !isV2SingingEnabled }
+                        )
                 )
             }
             Row(
@@ -244,13 +310,24 @@ class GenbinCommandScreen : Screen {
                         .fillMaxHeight()
                         .wrapContentHeight()
                         .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { isV3SingingEnabled = !isV3SingingEnabled }
-                    )
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { isV3SingingEnabled = !isV3SingingEnabled }
+                        )
                 )
             }
             // endregion Singing Options
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = {
+                    screenModel.actionGenerate()
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Generate")
+            }
         }
 
         if (showEnvSelectDialog) {
